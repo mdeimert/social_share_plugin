@@ -148,7 +148,7 @@
         [[NSFileManager defaultManager] moveItemAtPath:imagePath toPath:[NSString stringWithFormat:@"%@.ig", imagePath] error:&error];
         NSURL *path = [NSURL URLWithString:[NSString stringWithFormat:@"file://%@.ig", imagePath]];
         _dic = [UIDocumentInteractionController interactionControllerWithURL:path];
-        _dic.UTI = @"com.instagram.exclusivegram";
+        _dic.UTI = @"com.instagram.photo";
         if (![_dic presentOpenInMenuFromRect:CGRectZero inView:controller.view animated:TRUE]) {
             NSLog(@"Error sharing to instagram");
         };
