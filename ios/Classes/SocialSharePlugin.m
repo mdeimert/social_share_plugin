@@ -62,9 +62,11 @@
   if ([@"getPlatformVersion" isEqualToString:call.method]) {
     result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
   } else if ([@"shareToFeedInstagram" isEqualToString:call.method]) {
-      NSURL *instagramURL = [NSURL URLWithString:@"instagram://app"];
+      // work but you need to save image or video first in gallery
+      NSString *u = [NSString stringWithFormat:@"instagram://library?LocalIdentifier=%@", call.arguments[@"path"]];
+      NSURL *instagramURL = [NSURL URLWithString:u];
       if([[UIApplication sharedApplication] canOpenURL:instagramURL]) {
-          [self instagramShare:call.arguments[@"path"]];
+          [[UIApplication sharedApplication] openURL:instagramURL options:@{} completionHandler:nil];
           result(nil);
       } else {
           NSString *instagramLink = @"itms-apps://itunes.apple.com/us/app/apple-store/id389801252";
@@ -144,23 +146,13 @@
 - (void)instagramShare:(NSString*)imagePath {
     NSError *error = nil;
     UIViewController* controller = [UIApplication sharedApplication].delegate.window.rootViewController;
-    if (@available(iOS 13.0, *)) {
-        [[NSFileManager defaultManager] moveItemAtPath:imagePath toPath:[NSString stringWithFormat:@"%@.ig", imagePath] error:&error];
-        NSURL *path = [NSURL URLWithString:[NSString stringWithFormat:@"file://%@.ig", imagePath]];
-        _dic = [UIDocumentInteractionController interactionControllerWithURL:path];
-        _dic.UTI = @"com.instagram.photo";
-        if (![_dic presentOpenInMenuFromRect:CGRectZero inView:controller.view animated:TRUE]) {
-            NSLog(@"Error sharing to instagram");
-        };
-    } else {
-        [[NSFileManager defaultManager] moveItemAtPath:imagePath toPath:[NSString stringWithFormat:@"%@.igo", imagePath] error:&error];
-        NSURL *path = [NSURL URLWithString:[NSString stringWithFormat:@"file://%@.igo", imagePath]];
-        _dic = [UIDocumentInteractionController interactionControllerWithURL:path];
-        _dic.UTI = @"com.instagram.exclusivegram";
-        if (![_dic presentOpenInMenuFromRect:CGRectZero inView:controller.view animated:TRUE]) {
-            NSLog(@"Error sharing to instagram");
-        };
-    }
+    [[NSFileManager defaultManager] moveItemAtPath:imagePath toPath:[NSString stringWithFormat:@"%@.igo", imagePath] error:&error];
+    NSURL *path = [NSURL URLWithString:[NSString stringWithFormat:@"file://%@.igo", imagePath]];
+    _dic = [UIDocumentInteractionController interactionControllerWithURL:path];
+    _dic.UTI = @"com.instagram.exclusivegram";
+    if (![_dic presentOpenInMenuFromRect:CGRectZero inView:controller.view animated:TRUE]) {
+        NSLog(@"Error sharing to instagram");
+    };
 }
 
 - (void)twitterShare:(NSString*)text
